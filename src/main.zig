@@ -2,18 +2,14 @@ const std = @import("std");
 const engine = @import("engine.zig");
 const util = @import("util.zig");
 
-pub const std_options = struct {
-    pub const log_level = .info;
-    pub const logFn = util.log;
-};
+pub const std_options = util.std_options;
 
 const SecondState = struct {
-    x: usize = 1337,
+    x: usize = 7,
 
     pub fn on_start(ctx: *anyopaque) anyerror!void {
         _ = ctx;
         std.log.info("Reached second state!", .{});
-        //engine.app_instance.quit();
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
@@ -44,7 +40,7 @@ const SecondState = struct {
 };
 
 const MyState = struct {
-    counter: usize = 50,
+    counter: usize = 5,
 
     pub fn on_start(ctx: *anyopaque) anyerror!void {
         _ = ctx;
@@ -63,10 +59,8 @@ const MyState = struct {
         self.counter -= 1;
 
         if (self.counter == 0) {
-            var s = util.allocator.alloc(u8, @sizeOf(SecondState)) catch unreachable;
-            var sptr: *SecondState = @ptrCast(@alignCast(s.ptr));
-            sptr.* = SecondState{};
-            engine.app_instance.transition(sptr.state()) catch unreachable;
+            var new_state = util.allocate_state(SecondState) catch unreachable;
+            engine.app_instance.transition(new_state.state()) catch unreachable;
         }
     }
 
@@ -94,9 +88,6 @@ pub fn main() !void {
 
     util.init();
 
-    var state_mem = try util.allocator.alloc(u8, @sizeOf(MyState));
-    var state: *MyState = @ptrCast(@alignCast(state_mem.ptr));
-    state.* = MyState{};
-
+    var state = try util.allocate_state(MyState);
     try engine.init(options, state.state());
 }
