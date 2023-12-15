@@ -1,24 +1,102 @@
 const std = @import("std");
+const engine = @import("engine.zig");
+const util = @import("util.zig");
+
+pub const std_options = struct {
+    pub const log_level = .info;
+    pub const logFn = util.log;
+};
+
+const SecondState = struct {
+    x: usize = 1337,
+
+    pub fn on_start(ctx: *anyopaque) anyerror!void {
+        _ = ctx;
+        std.log.info("Reached second state!", .{});
+        //engine.app_instance.quit();
+    }
+
+    pub fn on_cleanup(ctx: *anyopaque) void {
+        _ = ctx;
+    }
+    pub fn on_update(ctx: *anyopaque) void {
+        var self: *SecondState = @ptrCast(@alignCast(ctx));
+        std.log.info("{}", .{self.x});
+
+        self.x -= 1;
+
+        if (self.x == 0) {
+            engine.app_instance.quit();
+        }
+    }
+    pub fn on_render(ctx: *anyopaque) void {
+        _ = ctx;
+    }
+
+    pub fn state(self: *SecondState) engine.StateInstance {
+        return engine.StateInstance{ .ptr = self, .size = @sizeOf(SecondState), .tab = .{
+            .on_start = on_start,
+            .on_cleanup = on_cleanup,
+            .on_render = on_render,
+            .on_update = on_update,
+        } };
+    }
+};
+
+const MyState = struct {
+    counter: usize = 50,
+
+    pub fn on_start(ctx: *anyopaque) anyerror!void {
+        _ = ctx;
+
+        std.log.info("Entered My State!", .{});
+    }
+
+    pub fn on_cleanup(ctx: *anyopaque) void {
+        _ = ctx;
+        std.log.info("Exiting My State!", .{});
+    }
+
+    pub fn on_update(ctx: *anyopaque) void {
+        std.log.info("Update!", .{});
+        var self: *MyState = @ptrCast(@alignCast(ctx));
+        self.counter -= 1;
+
+        if (self.counter == 0) {
+            var s = util.allocator.alloc(u8, @sizeOf(SecondState)) catch unreachable;
+            var sptr: *SecondState = @ptrCast(@alignCast(s.ptr));
+            sptr.* = SecondState{};
+            engine.app_instance.transition(sptr.state()) catch unreachable;
+        }
+    }
+
+    pub fn on_render(ctx: *anyopaque) void {
+        _ = ctx;
+        std.log.info("Draw!", .{});
+    }
+
+    pub fn state(self: *MyState) engine.StateInstance {
+        return engine.StateInstance{ .ptr = self, .size = @sizeOf(MyState), .tab = .{
+            .on_start = on_start,
+            .on_cleanup = on_cleanup,
+            .on_render = on_render,
+            .on_update = on_update,
+        } };
+    }
+};
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const options = engine.EngineOptions{
+        .title = "My App",
+        .width = 1280,
+        .height = 720,
+    };
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    util.init();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    var state_mem = try util.allocator.alloc(u8, @sizeOf(MyState));
+    var state: *MyState = @ptrCast(@alignCast(state_mem.ptr));
+    state.* = MyState{};
 
-    try bw.flush(); // don't forget to flush!
-}
-
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    try engine.init(options, state.state());
 }
