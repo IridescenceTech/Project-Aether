@@ -1,6 +1,6 @@
 const std = @import("std");
 const engine = @import("engine.zig");
-const t = @import("types.zig");
+const t = @import("types");
 
 pub const std_options = struct {
     pub const log_level = .debug;

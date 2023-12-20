@@ -20,6 +20,7 @@ pub const StateInterface = extern struct {
     pub const StateVTable = extern struct {
         /// on_start() calls the initialization methods.
         /// This method may fail and the transition will not proceed upon failure.
+        /// Technical detail: this method occurs before the second state exits.
         /// This method may assume the full engine is initialized
         on_start: *const fn (ctx: *anyopaque) anyerror!void,
 

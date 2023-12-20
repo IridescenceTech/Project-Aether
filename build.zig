@@ -27,6 +27,8 @@ pub fn build(b: *std.Build) void {
     lib.addModule("engine", engine);
     b.installArtifact(lib);
 
+    const types = b.addModule("types", .{ .source_file = .{ .path = "src/types.zig" } });
+
     const exe = b.addExecutable(.{
         .name = "Project-Aether",
         // In this case the main source file is merely a path, however, in more
@@ -36,6 +38,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe.linkLibrary(lib);
+    exe.addModule("types", types);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

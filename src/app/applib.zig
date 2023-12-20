@@ -21,6 +21,7 @@ const SecondState = struct {
 
         if (self.x == 0) {
             var app_interface = engine.aether_get_app_interface();
+            std.log.info("Quit Application!", .{});
             app_interface.quit();
         }
     }
@@ -47,7 +48,7 @@ const MyState = struct {
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
-        std.log.info("Exit First State!", .{});
+        std.log.info("Clean First State!", .{});
         _ = ctx;
     }
 
