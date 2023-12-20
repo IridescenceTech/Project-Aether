@@ -1,20 +1,20 @@
 const std = @import("std");
 const engine = @import("engine");
+const types = engine.Types;
 
 const SecondState = struct {
     x: usize = 7,
 
     pub fn on_start(ctx: *anyopaque) anyerror!void {
-        var self: *SecondState = @ptrCast(@alignCast(ctx));
+        _ = ctx;
         std.log.info("Reached second state!", .{});
-        std.log.info("X: {}", .{self.x});
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
         _ = ctx;
     }
     pub fn on_update(ctx: *anyopaque) void {
-        var self: *SecondState = @ptrCast(@alignCast(ctx));
+        var self = types.coerce_ptr(SecondState, ctx);
         std.log.info("{}", .{self.x});
 
         self.x -= 1;
@@ -28,8 +28,8 @@ const SecondState = struct {
         _ = ctx;
     }
 
-    pub fn state(self: *SecondState) engine.Types.StateInterface {
-        return engine.Types.StateInterface{ .ptr = self, .size = @sizeOf(SecondState), .tab = .{
+    pub fn state(self: *SecondState) types.StateInterface {
+        return types.StateInterface{ .ptr = self, .size = @sizeOf(SecondState), .tab = .{
             .on_start = on_start,
             .on_cleanup = on_cleanup,
             .on_render = on_render,
@@ -42,19 +42,17 @@ const MyState = struct {
     counter: usize = 5,
 
     pub fn on_start(ctx: *anyopaque) anyerror!void {
-        var self: *MyState = @ptrCast(@alignCast(ctx));
-        std.log.info("Entered My State!", .{});
-        std.log.info("Counter: {}", .{self.counter});
+        _ = ctx;
+        std.log.info("Enter First State!", .{});
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
+        std.log.info("Exit First State!", .{});
         _ = ctx;
-        std.log.info("Exiting My State!", .{});
     }
 
     pub fn on_update(ctx: *anyopaque) void {
-        //std.log.info("Update!", .{});
-        var self: *MyState = @ptrCast(@alignCast(ctx));
+        var self = types.coerce_ptr(MyState, ctx);
         self.counter -= 1;
 
         if (self.counter == 0) {
@@ -67,11 +65,10 @@ const MyState = struct {
 
     pub fn on_render(ctx: *anyopaque) void {
         _ = ctx;
-        //std.log.info("Draw!", .{});
     }
 
-    pub fn interface(self: *MyState) engine.Types.StateInterface {
-        return engine.Types.StateInterface{ .ptr = self, .size = @sizeOf(MyState), .tab = .{
+    pub fn interface(self: *MyState) types.StateInterface {
+        return types.StateInterface{ .ptr = self, .size = @sizeOf(MyState), .tab = .{
             .on_start = on_start,
             .on_cleanup = on_cleanup,
             .on_render = on_render,
@@ -80,14 +77,12 @@ const MyState = struct {
     }
 };
 
-pub export fn app_hook(options: *engine.Types.EngineOptions) engine.Types.StateInterface {
-    options.* = engine.Types.EngineOptions{
+pub export fn app_hook(options: *types.EngineOptions) types.StateInterface {
+    options.* = types.EngineOptions{
         .title = "My App",
         .width = 1280,
         .height = 720,
     };
-
-    std.log.info("HOOKLAND!", .{});
 
     var state = engine.Util.allocate(MyState) catch unreachable;
     return state.interface();

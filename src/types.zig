@@ -5,6 +5,11 @@ pub const EngineOptions = struct {
     height: u32,
 };
 
+/// Coerces a pointer `ptr` from *anyopaque to type `*T` for a given `T`.
+pub fn coerce_ptr(comptime T: type, ptr: *anyopaque) *T {
+    return @as(*T, @ptrCast(@alignCast(ptr)));
+}
+
 /// The StateInterface serves as a generic interface to any state using a VTable.
 /// The inheriting state object should not assume that any values are initialized.
 pub const StateInterface = extern struct {
