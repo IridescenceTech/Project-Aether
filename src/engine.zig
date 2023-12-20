@@ -1,24 +1,17 @@
 const std = @import("std");
 const log = std.log;
-const AppInterface = @import("core/app.zig");
 
-pub const util = @import("util.zig");
+const t = @import("types.zig");
+const util = @import("util.zig");
+
 pub const std_options = util.std_options;
-pub const StateInterface = @import("core/state.zig").StateInterface;
-
-/// Options for the game engine
-pub const EngineOptions = struct {
-    title: []const u8,
-    width: u32,
-    height: u32,
-};
 
 /// External hook to the user code
-extern fn app_hook(opt: *EngineOptions) callconv(.C) StateInterface;
+extern fn app_hook(opt: *t.EngineOptions) callconv(.C) t.StateInterface;
 
 const Application = struct {
     running: bool,
-    state: ?StateInterface,
+    state: ?t.StateInterface,
 
     pub fn init() Application {
         return Application{
@@ -43,7 +36,7 @@ const Application = struct {
         }
     }
 
-    pub fn transition(ctx: *anyopaque, new_state: StateInterface) anyerror!void {
+    pub fn transition(ctx: *anyopaque, new_state: t.StateInterface) anyerror!void {
         var self: *Application = @ptrCast(@alignCast(ctx));
 
         if (self.state) |state| {
@@ -55,32 +48,34 @@ const Application = struct {
         try new_state.on_start();
     }
 
-    pub fn interface(self: *Application) AppInterface {
-        return AppInterface{ .ptr = self, .tab = .{
+    pub fn interface(self: *Application) t.AppInterface {
+        return t.AppInterface{ .ptr = self, .tab = .{
             .quit = quit,
             .transition = transition,
         } };
     }
 };
 
+var app_interface: t.AppInterface = undefined;
+
 pub fn main() !void {
     // TODO: Platform Init(?) / Base Init
     util.init();
+    log.info("Calling into hookland!", .{});
 
-    var options: EngineOptions = undefined;
+    var options: t.EngineOptions = undefined;
     var state = app_hook(&options);
 
-    try init(options, state);
-}
-
-fn init(options: EngineOptions, state: StateInterface) !void {
     log.info("Project Aether Initialize!", .{});
-    _ = options;
     //TODO: Actually initalize the engine.
 
     var application = Application.init();
-    var app_interface = application.interface();
+    app_interface = application.interface();
 
     try app_interface.transition(state);
     application.run();
+}
+
+pub export fn aether_get_app_interface() t.AppInterface {
+    return app_interface;
 }

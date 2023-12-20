@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const engine = b.addModule("engine", .{ .source_file = .{ .path = "src/engine.zig" } });
+    const engine = b.addModule("engine", .{ .source_file = .{ .path = "src/interface.zig" } });
 
     lib.addModule("engine", engine);
     b.installArtifact(lib);

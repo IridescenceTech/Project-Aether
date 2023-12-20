@@ -1,6 +1,12 @@
+/// Options for the game engine
+pub const EngineOptions = struct {
+    title: []const u8,
+    width: u32,
+    height: u32,
+};
+
 /// The StateInterface serves as a generic interface to any state using a VTable.
-/// The inheriting state object should not assume that engine primitives are initialized.
-/// Static member initializations (i.e. variable: usize = 10) are initialized correctly.
+/// The inheriting state object should not assume that any values are initialized.
 pub const StateInterface = extern struct {
     ptr: *anyopaque,
     size: usize,
@@ -41,5 +47,33 @@ pub const StateInterface = extern struct {
     /// Calls the on_render() method for the interface
     pub fn on_render(self: StateInterface) void {
         self.tab.on_render(self.ptr);
+    }
+};
+
+/// App Interface is the public facing interface for the Application
+/// App Interface exposes a VTable and a pointer to the actual application.
+pub const AppInterface = extern struct {
+    ptr: *anyopaque,
+    tab: AppVTable,
+
+    pub const AppVTable = extern struct {
+        /// Transition takes a given state and transitions the application from
+        /// its current state or no state to the new state `state` specified by
+        /// the interface. The StateInterface should be derived from the util
+        /// allocated state for consistency
+        transition: *const fn (ctx: *anyopaque, state: StateInterface) anyerror!void,
+
+        /// This quits the application
+        quit: *const fn (ctx: *anyopaque) void,
+    };
+
+    /// Call the generic transition method on Application
+    pub fn transition(app: AppInterface, state: StateInterface) anyerror!void {
+        try app.tab.transition(app.ptr, state);
+    }
+
+    /// Call the quit method on Application
+    pub fn quit(app: AppInterface) void {
+        app.tab.quit(app.ptr);
     }
 };
