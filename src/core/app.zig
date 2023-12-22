@@ -38,7 +38,10 @@ pub fn run(self: *Application) void {
 pub fn transition(ctx: *anyopaque, new_state: t.StateInterface) anyerror!void {
     var self: *Application = @ptrCast(@alignCast(ctx));
 
-    new_state.on_start() catch return;
+    new_state.on_start() catch {
+        util.dealloc_state(new_state);
+        return error.TransitionFailure;
+    };
 
     if (self.state) |state| {
         state.on_cleanup();

@@ -65,8 +65,9 @@ pub const AppInterface = extern struct {
     pub const AppVTable = extern struct {
         /// Transition takes a given state and transitions the application from
         /// its current state or no state to the new state `state` specified by
-        /// the interface. The StateInterface should be derived from the util
-        /// allocated state for consistency
+        /// the interface. This `state` becomes owned by the Application, regardless
+        /// of failure. The StateInterface should be allocated via the util method.
+        /// If transition fails, the state object is destroyed, and an error returned.
         transition: *const fn (ctx: *anyopaque, state: StateInterface) anyerror!void,
 
         /// This quits the application
