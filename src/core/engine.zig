@@ -1,7 +1,8 @@
 // Portability notes: None; Code should be platform agnostic.
 
 const std = @import("std");
-const t = @import("types");
+const platform = @import("platform");
+const t = @import("../types.zig");
 
 const log = @import("log.zig");
 const util = @import("util.zig");
@@ -10,14 +11,15 @@ const Application = @import("app.zig");
 
 pub fn main() !void {
     // TODO: Platform Init(?) / Base Init
-    util.init();
+    try platform.base_init();
     log.info("Calling user hook!", .{});
 
-    var options: t.EngineOptions = undefined;
+    var options: t.Platform.EngineOptions = undefined;
     var state = app_hook(&options);
 
     log.info("Engine Initialized!", .{});
     //TODO: Actually initalize the engine.
+    try platform.init(options);
 
     var application = Application.init();
     app_interface = application.interface();
@@ -27,7 +29,7 @@ pub fn main() !void {
 }
 
 /// External hook to the user code
-extern fn app_hook(opt: *t.EngineOptions) callconv(.C) t.StateInterface;
+extern fn app_hook(opt: *t.Platform.EngineOptions) callconv(.C) t.StateInterface;
 
 /// App interface
 var app_interface: t.AppInterface = undefined;

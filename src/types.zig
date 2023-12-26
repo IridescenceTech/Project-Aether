@@ -1,9 +1,4 @@
-/// Options for the game engine
-pub const EngineOptions = struct {
-    title: []const u8,
-    width: u32,
-    height: u32,
-};
+pub const Platform = @import("platform/types.zig");
 
 /// Coerces a pointer `ptr` from *anyopaque to type `*T` for a given `T`.
 pub fn coerce_ptr(comptime T: type, ptr: *anyopaque) *T {

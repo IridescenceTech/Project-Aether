@@ -74,11 +74,12 @@ const MyState = struct {
     }
 };
 
-pub export fn app_hook(options: *types.EngineOptions) types.StateInterface {
-    options.* = types.EngineOptions{
+pub export fn app_hook(options: *types.Platform.EngineOptions) types.StateInterface {
+    options.* = types.Platform.EngineOptions{
         .title = "My App",
         .width = 1280,
         .height = 720,
+        .graphics_api = .OpenGL46,
     };
 
     var state = util.allocate_state(MyState) catch unreachable;

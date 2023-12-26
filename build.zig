@@ -28,6 +28,8 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(lib);
 
     const types = b.addModule("types", .{ .source_file = .{ .path = "src/types.zig" } });
+    const glfw = b.addModule("glfw", .{ .source_file = .{ .path = "ext/glfw/src/main.zig" } });
+    const platform = b.addModule("platform", .{ .source_file = .{ .path = "src/platform/platform.zig" }, .dependencies = &.{.{ .name = "types", .module = types }} });
 
     const exe = b.addExecutable(.{
         .name = "Project-Aether",
@@ -39,6 +41,8 @@ pub fn build(b: *std.Build) void {
     });
     exe.linkLibrary(lib);
     exe.addModule("types", types);
+    exe.addModule("platform", platform);
+    exe.addModule("glfw", glfw);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
