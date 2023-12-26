@@ -1,3 +1,5 @@
+// Portability notes: `std.io.writer()` and `std.io.getStdErr()` may not always be portable
+
 const std = @import("std");
 const builtin = @import("builtin");
 

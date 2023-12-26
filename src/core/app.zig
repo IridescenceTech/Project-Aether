@@ -1,3 +1,5 @@
+// Portability notes: None; Code should be platform agnostic.
+
 const t = @import("types");
 
 const log = @import("log.zig");

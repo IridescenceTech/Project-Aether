@@ -1,3 +1,5 @@
+// Portability notes: None; Code should be platform agnostic.
+
 const std = @import("std");
 const t = @import("types");
 
