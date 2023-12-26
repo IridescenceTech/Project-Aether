@@ -1,5 +1,6 @@
 const std = @import("std");
 const engine = @import("engine");
+const util = engine.Util;
 const types = engine.Types;
 
 const SecondState = struct {
@@ -7,7 +8,7 @@ const SecondState = struct {
 
     pub fn on_start(ctx: *anyopaque) anyerror!void {
         _ = ctx;
-        std.log.info("Reached second state!", .{});
+        util.log("Reached second state!", .{});
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
@@ -15,13 +16,13 @@ const SecondState = struct {
     }
     pub fn on_update(ctx: *anyopaque) void {
         var self = types.coerce_ptr(SecondState, ctx);
-        std.log.info("{}", .{self.x});
+        util.log("{}", .{self.x});
 
         self.x -= 1;
 
         if (self.x == 0) {
             var app_interface = engine.aether_get_app_interface();
-            std.log.info("Quit Application!", .{});
+            util.log("Quit Application!", .{});
             app_interface.quit();
         }
     }
@@ -40,28 +41,23 @@ const SecondState = struct {
 };
 
 const MyState = struct {
-    counter: usize = 5,
-
     pub fn on_start(ctx: *anyopaque) anyerror!void {
         _ = ctx;
-        std.log.info("Enter First State!", .{});
+        util.log("Enter First State!", .{});
     }
 
     pub fn on_cleanup(ctx: *anyopaque) void {
-        std.log.info("Clean First State!", .{});
+        util.log("Clean First State!", .{});
         _ = ctx;
     }
 
     pub fn on_update(ctx: *anyopaque) void {
-        var self = types.coerce_ptr(MyState, ctx);
-        self.counter -= 1;
+        _ = ctx;
 
-        if (self.counter == 0) {
-            var new_state = engine.Util.allocate(SecondState) catch unreachable;
+        var new_state = util.allocate_state(SecondState) catch unreachable;
 
-            var app_interface = engine.aether_get_app_interface();
-            app_interface.transition(new_state.state()) catch unreachable;
-        }
+        var app_interface = engine.aether_get_app_interface();
+        app_interface.transition(new_state.state()) catch unreachable;
     }
 
     pub fn on_render(ctx: *anyopaque) void {
@@ -85,6 +81,6 @@ pub export fn app_hook(options: *types.EngineOptions) types.StateInterface {
         .height = 720,
     };
 
-    var state = engine.Util.allocate(MyState) catch unreachable;
+    var state = util.allocate_state(MyState) catch unreachable;
     return state.interface();
 }

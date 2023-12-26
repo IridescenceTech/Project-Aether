@@ -1,11 +1,7 @@
 const std = @import("std");
-const engine = @import("engine.zig");
 const t = @import("types");
 
-pub const std_options = struct {
-    pub const log_level = .debug;
-    pub const logFn = log;
-};
+const engine = @import("engine.zig");
 
 var initialized: bool = false;
 
@@ -35,23 +31,8 @@ pub fn dealloc_state(state: t.StateInterface) void {
     allocator_inst.free(slice);
 }
 
-/// Custom logger function
-pub fn log(comptime level: std.log.Level, comptime scope: @TypeOf(.EnumLiteral), comptime format: []const u8, args: anytype) void {
-    _ = scope;
-
-    const prefix = "[" ++ comptime level.asText() ++ "]: ";
-
-    const mutex = std.debug.getStderrMutex();
-    mutex.lock();
-    defer std.debug.getStderrMutex().unlock();
-
-    const stderr = std.io.getStdErr().writer();
-    nosuspend stderr.print(prefix ++ format ++ "\n", args) catch return;
-}
-
-// Public:
-
-pub export fn aether_allocate(size: usize) ?[*]u8 {
+// Public utility for allocatiing state
+pub export fn aether_allocate_state(size: usize) ?[*]u8 {
     const alloc = allocator() catch return null;
     const res = alloc.alloc(u8, size) catch return null;
     return res.ptr;

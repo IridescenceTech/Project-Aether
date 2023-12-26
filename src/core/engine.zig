@@ -1,11 +1,10 @@
 const std = @import("std");
-const log = std.log;
-
 const t = @import("types");
-const Application = @import("core/app.zig");
+
+const log = @import("log.zig");
 const util = @import("util.zig");
 
-pub const std_options = util.std_options;
+const Application = @import("app.zig");
 
 pub fn main() !void {
     // TODO: Platform Init(?) / Base Init

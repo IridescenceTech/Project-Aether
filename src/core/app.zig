@@ -1,6 +1,8 @@
 const t = @import("types");
-const log = @import("std").log;
-const util = @import("../util.zig");
+
+const log = @import("log.zig");
+const util = @import("util.zig");
+
 const Application = @This();
 
 running: bool,
@@ -51,6 +53,7 @@ pub fn transition(ctx: *anyopaque, new_state: t.StateInterface) anyerror!void {
     self.state = new_state;
 }
 
+/// Get the Application Interface Object
 pub fn interface(self: *Application) t.AppInterface {
     return t.AppInterface{ .ptr = self, .tab = .{
         .quit = quit,
