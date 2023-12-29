@@ -28,16 +28,6 @@ pub fn build(b: *std.Build) void {
         },
     );
 
-    const platform = b.addModule(
-        "platform",
-        .{
-            .source_file = .{ .path = "src/platform/platform.zig" },
-            .dependencies = &.{
-                .{ .name = "types", .module = types },
-            },
-        },
-    );
-
     const exe = b.addExecutable(.{
         .name = "Project-Aether",
         .root_source_file = .{ .path = "src/core/engine.zig" },
@@ -46,7 +36,6 @@ pub fn build(b: *std.Build) void {
     });
     exe.linkLibrary(lib);
     exe.addModule("types", types);
-    exe.addModule("platform", platform);
 
     b.installArtifact(exe);
 

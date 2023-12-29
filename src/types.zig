@@ -1,4 +1,18 @@
-pub const Platform = @import("platform/types.zig");
+/// Graphics APIs
+pub const GraphicsAPI = enum {
+    DirectX,
+    GLES,
+    OpenGL,
+    Vulkan,
+};
+
+/// Options for the game engine
+pub const EngineOptions = struct {
+    title: []const u8,
+    width: u16,
+    height: u16,
+    graphics_api: GraphicsAPI,
+};
 
 /// Coerces a pointer `ptr` from *anyopaque to type `*T` for a given `T`.
 pub fn coerce_ptr(comptime T: type, ptr: *anyopaque) *T {
