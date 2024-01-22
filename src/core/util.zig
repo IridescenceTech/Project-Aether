@@ -10,3 +10,13 @@ pub fn dealloc_state(state: t.StateInterface) void {
     const allocator_inst = platform.Allocator.allocator() catch return;
     allocator_inst.free(slice);
 }
+
+pub fn alloc_state(comptime T: type) !*T {
+    const allocator_inst = platform.Allocator.allocator() catch return error.DeallocatorNotFound;
+
+    const slice = try allocator_inst.alloc(u8, @sizeOf(T));
+    const ptr = @as(*T, @ptrCast(@alignCast(slice.ptr)));
+    ptr.* = T{};
+
+    return ptr;
+}

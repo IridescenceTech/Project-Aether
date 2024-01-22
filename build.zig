@@ -49,18 +49,12 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    const user = b.addModule("user", .{
-        .root_source_file = .{ .path = "src/user.zig" },
-    });
-
     const exe = b.addExecutable(.{
         .name = "Aether",
         .root_source_file = .{ .path = "src/engine.zig" },
         .target = target,
         .optimize = optimize,
     });
-    user.addImport("engine", &exe.root_module);
-    exe.root_module.addImport("user", user);
     exe.root_module.addImport("platform", platform);
     exe.linkLibC();
 
