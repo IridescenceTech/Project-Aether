@@ -2,6 +2,7 @@
 
 const t = @import("../types.zig");
 
+const Events = @import("event.zig");
 const log = @import("log.zig");
 const util = @import("util.zig");
 
@@ -18,6 +19,22 @@ pub fn init() Application {
     };
 }
 
+fn update(event: Events.Event) void {
+    var self: *Application = @ptrCast(@alignCast(event.data));
+    if (self.state == null)
+        return;
+
+    self.state.?.on_update();
+}
+
+fn render(event: Events.Event) void {
+    var self: *Application = @ptrCast(@alignCast(event.data));
+    if (self.state == null)
+        return;
+
+    self.state.?.on_render();
+}
+
 /// Quits the application
 fn quit(ctx: *anyopaque) void {
     var self: *Application = @ptrCast(@alignCast(ctx));
@@ -28,12 +45,23 @@ fn quit(ctx: *anyopaque) void {
 pub fn run(self: *Application) void {
     log.info("Starting Application Main Loop!", .{});
     self.running = true;
+
+    Events.subscribe(Events.UpdateChannel, update);
+    Events.subscribe(Events.RenderChannel, render);
+
     while (self.running) {
         if (self.state == null)
             continue;
 
-        self.state.?.on_update();
-        self.state.?.on_render();
+        Events.publish(
+            Events.UpdateChannel,
+            Events.Event{ .id = Events.UpdateChannel, .data = self },
+        );
+
+        Events.publish(
+            Events.RenderChannel,
+            Events.Event{ .id = Events.RenderChannel, .data = self },
+        );
     }
     log.info("Exiting Application Main Loop!", .{});
 }

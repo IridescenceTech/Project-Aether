@@ -1,8 +1,8 @@
 // Portability notes: None; Code should be platform agnostic.
 const std = @import("std");
-const platform = @import("platform");
+pub const platform = @import("platform");
 pub const Types = @import("types.zig");
-
+pub const Events = @import("core/event.zig");
 pub const Util = @import("core/util.zig");
 pub const Log = @import("core/log.zig");
 pub const Options = platform.Types.EngineOptions;
@@ -24,7 +24,12 @@ pub fn main() !void {
     const state = try app_hook(&options);
 
     Log.info("Engine Initialized!", .{});
+
+    try Events.init();
+    defer Events.deinit();
+
     try platform.init(options);
+    defer platform.deinit();
 
     var application = Application.init();
     app_interface = application.interface();

@@ -14,10 +14,12 @@ const MyState = struct {
 
     pub fn on_update(ctx: *anyopaque) void {
         _ = ctx;
+        engine.Log.info("Update First State!", .{});
     }
 
     pub fn on_render(ctx: *anyopaque) void {
         _ = ctx;
+        engine.Log.info("Render First State!", .{});
     }
 
     pub fn interface(self: *MyState) engine.Types.StateInterface {
