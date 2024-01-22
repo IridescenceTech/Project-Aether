@@ -1,0 +1,3 @@
+[submodule "Aether-Platform"]
+	path = Aether-Platform
+	url = git@github.com:IridescenceTech/Aether-Platform.git

@@ -21,12 +21,12 @@ pub fn coerce_ptr(comptime T: type, ptr: *anyopaque) *T {
 
 /// The StateInterface serves as a generic interface to any state using a VTable.
 /// The inheriting state object should not assume that any values are initialized.
-pub const StateInterface = extern struct {
+pub const StateInterface = struct {
     ptr: *anyopaque,
     size: usize,
     tab: StateVTable,
 
-    pub const StateVTable = extern struct {
+    pub const StateVTable = struct {
         /// on_start() calls the initialization methods.
         /// This method may fail and the transition will not proceed upon failure.
         /// Technical detail: this method occurs before the second state exits.
@@ -67,11 +67,11 @@ pub const StateInterface = extern struct {
 
 /// App Interface is the public facing interface for the Application
 /// App Interface exposes a VTable and a pointer to the actual application.
-pub const AppInterface = extern struct {
+pub const AppInterface = struct {
     ptr: *anyopaque,
     tab: AppVTable,
 
-    pub const AppVTable = extern struct {
+    pub const AppVTable = struct {
         /// Transition takes a given state and transitions the application from
         /// its current state or no state to the new state `state` specified by
         /// the interface. This `state` becomes owned by the Application, regardless

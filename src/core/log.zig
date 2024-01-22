@@ -75,13 +75,3 @@ pub fn warning(comptime format: []const u8, args: anytype) void {
 pub fn err(comptime format: []const u8, args: anytype) void {
     log(.Error, format, args);
 }
-
-/// Public log interface, allows info reporting from client
-/// Takes a string with a given size
-pub export fn aether_log(str: [*]const u8, size: usize) void {
-    var slice: []const u8 = undefined;
-    slice.ptr = str;
-    slice.len = size;
-
-    log(.Info, "{s}", .{slice});
-}
