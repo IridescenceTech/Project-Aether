@@ -36,8 +36,8 @@ pub fn init() !void {
 }
 
 pub fn deinit() void {
-    for (channels.items) |channel| {
-        channel.subscribers.deinit();
+    for (channels.items) |*channel| {
+        channel.subscribers.clearAndFree();
     }
     channels.deinit();
 }
@@ -57,12 +57,17 @@ pub fn subscribe(channel: ChannelIndex, subscriber: Subscriber) void {
 }
 
 pub fn unsubscribe(channel: ChannelIndex, subscriber: Subscriber) void {
-    const chan = channels.items[channel];
-    const index = chan.subscribers.items.indexOf(subscriber);
-    if (index == null) {
-        return;
+    const chan = &channels.items[channel];
+
+    var index: usize = 0;
+    for (chan.subscribers.items, 0..) |item, i| {
+        if (item == subscriber) {
+            index = i;
+            break;
+        }
     }
-    chan.subscribers.items.remove(index);
+
+    _ = chan.subscribers.swapRemove(index);
 }
 
 pub fn publish(channel: ChannelIndex, event: Event) void {

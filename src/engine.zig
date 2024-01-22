@@ -5,7 +5,13 @@ pub const Types = @import("types.zig");
 pub const Events = @import("core/event.zig");
 pub const Util = @import("core/util.zig");
 pub const Log = @import("core/log.zig");
-pub const Options = platform.Types.EngineOptions;
+
+pub const Options = struct {
+    fps: ?u32 = null,
+    tps: ?u32 = null,
+    ups: ?u32 = null,
+    platform: platform.Types.EngineOptions,
+};
 
 const Application = @import("core/app.zig");
 
@@ -25,13 +31,16 @@ pub fn main() !void {
 
     Log.info("Engine Initialized!", .{});
 
+    try platform.init(options.platform);
+    defer platform.deinit();
+
     try Events.init();
     defer Events.deinit();
 
-    try platform.init(options);
-    defer platform.deinit();
-
     var application = Application.init();
+    application.tps = options.tps;
+    application.ups = options.ups;
+    application.fps = options.fps;
     app_interface = application.interface();
 
     try app_interface.transition(state);
