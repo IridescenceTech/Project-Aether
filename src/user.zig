@@ -29,17 +29,7 @@ const MyState = struct {
 };
 
 pub fn app_hook(options: *engine.Options) anyerror!engine.Types.StateInterface {
-    options.* = .{
-        .tps = 20,
-        .ups = 144,
-        .fps = null,
-        .platform = .{
-            .title = "Hello, World!",
-            .width = 800,
-            .height = 600,
-            .graphics_api = .OpenGL,
-        },
-    };
+    options.tps = 20;
     engine.Log.info("app_hook called", .{});
 
     var state = engine.Util.alloc_state(MyState) catch unreachable;

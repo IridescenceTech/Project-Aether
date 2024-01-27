@@ -60,6 +60,8 @@ pub fn run(self: *Application) void {
     var curr_nanos = std.time.nanoTimestamp();
     var last_nanos = std.time.nanoTimestamp();
     var fps_counter: u64 = 0;
+    var fps_nanos: u64 = 0;
+    var fps_report: u64 = 0;
     var tps_counter: u64 = 0;
     var ups_counter: u64 = 0;
 
@@ -68,6 +70,7 @@ pub fn run(self: *Application) void {
         fps_counter += @intCast(curr_nanos - last_nanos);
         tps_counter += @intCast(curr_nanos - last_nanos);
         ups_counter += @intCast(curr_nanos - last_nanos);
+        fps_nanos += @intCast(curr_nanos - last_nanos);
 
         last_nanos = curr_nanos;
 
@@ -77,6 +80,7 @@ pub fn run(self: *Application) void {
         if (self.fps) |fps| {
             if (fps_counter >= nanoseconds_per_second / fps) {
                 fps_counter = 0;
+                fps_report += 1;
 
                 const g = platform.Graphics.get_interface();
                 g.start_frame();
@@ -90,6 +94,7 @@ pub fn run(self: *Application) void {
             }
         } else {
             const g = platform.Graphics.get_interface();
+            fps_report += 1;
 
             g.start_frame();
             Events.publish(
@@ -97,6 +102,12 @@ pub fn run(self: *Application) void {
                 Events.Event{ .id = Events.RenderChannel, .data = self },
             );
             g.end_frame();
+        }
+
+        if (fps_nanos >= nanoseconds_per_second) {
+            fps_nanos = 0;
+            log.debug("FPS: {}", .{fps_report});
+            fps_report = 0;
         }
 
         if (self.tps) |tps| {
