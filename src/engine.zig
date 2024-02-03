@@ -4,6 +4,7 @@ pub const platform = @import("platform");
 pub const Types = @import("types.zig");
 pub const Events = @import("core/event.zig");
 pub const Util = @import("core/util.zig");
+pub const Input = @import("core/input.zig");
 pub const Log = @import("core/log.zig");
 
 pub const Options = struct {

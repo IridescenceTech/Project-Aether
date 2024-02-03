@@ -6,6 +6,7 @@ const Events = @import("event.zig");
 const log = @import("log.zig");
 const util = @import("util.zig");
 const platform = @import("platform");
+const input = @import("input.zig");
 
 const Application = @This();
 
@@ -17,6 +18,7 @@ ups: ?u32,
 
 /// Creates a default state application (running = false, no state)
 pub fn init() Application {
+    try input.init();
     return Application{
         .running = false,
         .state = null,
@@ -77,22 +79,12 @@ pub fn run(self: *Application) void {
         if (self.state == null)
             continue;
 
-        if (self.fps) |fps| {
-            if (fps_counter >= nanoseconds_per_second / fps) {
+        const should_fps = self.fps == null or (self.fps != null and fps_counter >= nanoseconds_per_second / self.fps.?);
+        if (should_fps) {
+            if (self.fps != null) {
                 fps_counter = 0;
-                fps_report += 1;
-
-                const g = platform.Graphics.get_interface();
-                g.start_frame();
-
-                Events.publish(
-                    Events.RenderChannel,
-                    Events.Event{ .id = Events.RenderChannel, .data = self },
-                );
-
-                g.end_frame();
             }
-        } else {
+
             const g = platform.Graphics.get_interface();
             fps_report += 1;
 
@@ -110,36 +102,41 @@ pub fn run(self: *Application) void {
             fps_report = 0;
         }
 
-        if (self.tps) |tps| {
-            if (tps_counter >= nanoseconds_per_second / tps) {
+        const should_tps = self.tps == null or (self.tps != null and tps_counter >= nanoseconds_per_second / self.tps.?);
+        if (should_tps) {
+            if (self.tps != null) {
                 tps_counter = 0;
-                Events.publish(
-                    Events.TickChannel,
-                    Events.Event{ .id = Events.UpdateChannel, .data = self },
-                );
             }
-        } else {
+
             Events.publish(
                 Events.TickChannel,
-                Events.Event{ .id = Events.UpdateChannel, .data = self },
+                Events.Event{ .id = Events.TickChannel, .data = self },
             );
         }
 
-        if (self.ups) |ups| {
-            if (ups_counter >= nanoseconds_per_second / ups) {
+        const should_ups = self.ups == null or (self.ups != null and ups_counter >= nanoseconds_per_second / self.ups.?);
+        if (should_ups) {
+            if (self.ups != null) {
                 ups_counter = 0;
-                Events.publish(
-                    Events.UpdateChannel,
-                    Events.Event{ .id = Events.UpdateChannel, .data = self },
-                );
-                platform.poll_events();
             }
-        } else {
+
             Events.publish(
                 Events.UpdateChannel,
                 Events.Event{ .id = Events.UpdateChannel, .data = self },
             );
             platform.poll_events();
+            if (input.get_input_result()) |result| {
+                if (self.state != null) {
+                    var event = t.InputStateEvent{
+                        .data = self.state.?.ptr,
+                        .input = result,
+                    };
+                    Events.publish(
+                        Events.InputChannel,
+                        Events.Event{ .id = Events.InputChannel, .data = &event },
+                    );
+                }
+            }
         }
 
         if (platform.Graphics.get_interface().should_close()) {
@@ -149,6 +146,12 @@ pub fn run(self: *Application) void {
 
     Events.unsubscribe(Events.UpdateChannel, update);
     Events.unsubscribe(Events.RenderChannel, render);
+
+    if (self.state) |state| {
+        state.on_cleanup();
+        util.dealloc_state(state);
+    }
+
     log.info("Exiting Application Main Loop!", .{});
 }
 

@@ -1,3 +1,5 @@
+const platform = @import("platform");
+
 /// Graphics APIs
 pub const GraphicsAPI = enum {
     DirectX,
@@ -12,6 +14,47 @@ pub const EngineOptions = struct {
     width: u16,
     height: u16,
     graphics_api: GraphicsAPI,
+};
+
+/// Input Management Interface
+pub const InputDescriptor = struct {
+    pub const ActionInput = struct {
+        id: u16, // ID of the action
+        key: platform.Types.Key, // Key to bind to
+    };
+
+    pub const Directional = struct {
+        analog_priority: u8, // Lower number is higher priority
+        id: u8, // ID of the direction
+    };
+
+    directional: []Directional,
+    action: []ActionInput,
+};
+
+/// Input Data
+pub const InputResult = struct {
+    pub const Direction = struct {
+        x: f32,
+        y: f32,
+        id: u8,
+    };
+
+    pub const Action = struct {
+        id: u16,
+        kind: platform.Types.KeyState,
+    };
+
+    directions: []Direction,
+    actions: []Action,
+};
+
+/// Input State Event
+/// This event is used to pass input data to the state
+/// The data is a pointer to the state which is being passed
+pub const InputStateEvent = struct {
+    data: *anyopaque,
+    input: InputResult,
 };
 
 /// Coerces a pointer `ptr` from *anyopaque to type `*T` for a given `T`.
